@@ -27,8 +27,9 @@ ONBUILD COPY ./build/version.cake ./build/version.cake
 ONBUILD RUN ./build.sh --target=Clean
 
 # Copy source projects and restore as distinct layers
-ONBUILD COPY ./*.sln ./*.props ./
-ONBUILD COPY src/*/*.csproj ./
+ONBUILD COPY *.sln ./
+ONBUILD COPY *.props ./
+ONBUILD COPY src/**/*.csproj ./
 ONBUILD RUN for file in $(ls *.csproj); do mkdir -p src/${file%.*}/ && mv $file src/${file%.*}/; done
 ONBUILD COPY tests/*/*.csproj ./
 ONBUILD RUN for file in $(ls *.csproj); do mkdir -p tests/${file%.*}/ && mv $file tests/${file%.*}/; done
