@@ -51,8 +51,8 @@ ONBUILD ARG BUILD_VERSION
 ONBUILD ARG VERSION=${BUILD_VERSION:-1.0.0}
 
 # Build
-RUN ./build.sh --target=Build
+ONBUILD RUN ./build.sh --target=Build
 
 # Test
-RUN ./build.sh --target=Test
+ONBUILD RUN ./build.sh --target=Test
 
