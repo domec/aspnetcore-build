@@ -16,6 +16,43 @@ RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends mono-devel \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
-    
-WORKDIR /sln
+
+WORKDIR /src
+
+# Install Cake, and compile the Cake build script
+ONBUILD COPY ./build.sh ./build.cake ./nuget.config ./
+ONBUILD COPY ./build/constants.cake ./build/constants.cake
+ONBUILD COPY ./build/common.cake ./build/common.cake
+ONBUILD COPY ./build/version.cake ./build/version.cake
+ONBUILD RUN ./build.sh --target=Clean
+
+# Copy source projects and restore as distinct layers
+ONBUILD COPY ./*.sln ./*.props ./*.targets ./
+ONBUILD COPY src/*/*.csproj ./
+ONBUILD RUN for file in $(ls *.csproj); do mkdir -p src/${file%.*}/ && mv $file src/${file%.*}/; done
+ONBUILD COPY tests/*/*.csproj ./
+ONBUILD RUN for file in $(ls *.csproj); do mkdir -p tests/${file%.*}/ && mv $file tests/${file%.*}/; done
+#COPY src/sts.domec.tools.host/sts.domec.tools.host.csproj src/sts.domec.tools.host/sts.domec.tools.host.csproj
+#COPY src/domain/sts.domec.tools.domain/sts.domec.tools.domain.csproj src/domain/sts.domec.tools.domain/sts.domec.tools.domain.csproj
+#COPY src/domain/sts.domec.tools.domain.nh/sts.domec.tools.domain.nh.csproj src/domain/sts.domec.tools.domain.nh/sts.domec.tools.domain.nh.csproj
+#COPY src/config/sts.domec.tools.config/sts.domec.tools.config.csproj src/config/sts.domec.tools.config/sts.domec.tools.config.csproj
+#COPY src/storage/sts.domec.tools.storage/sts.domec.tools.storage.csproj src/storage/sts.domec.tools.storage/sts.domec.tools.storage.csproj
+ONBUILD RUN ./build.sh --target=Restore
+
+# Copy all remaining sources
+ONBUILD COPY . .
+
+# This defines the `ARG` inside the build-stage (it will be executed after `FROM` 
+# in the child image, so it's a new build-stage). Don't set a default value so that 
+# the value is set to what's currently set for `BUILD_VERSION` 
+ONBUILD ARG BUILD_VERSION
+
+# If BUILD_VERSION is set/non-empty, use it, otherwise use a default value 
+ONBUILD ARG VERSION=${BUILD_VERSION:-1.0.0}
+
+# Build
+RUN ./build.sh --target=Build
+
+# Test
+RUN ./build.sh --target=Test
 
