@@ -17,13 +17,14 @@ RUN apt-get update -qq \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-WORKDIR /src
+WORKDIR /repo
 
 # Install Cake, and compile the Cake build script
 ONBUILD COPY ./build.sh ./build.cake ./nuget.config ./
 ONBUILD COPY ./build/constants.cake ./build/constants.cake
 ONBUILD COPY ./build/common.cake ./build/common.cake
 ONBUILD COPY ./build/version.cake ./build/version.cake
+ONBUILD RUN mkdir src
 ONBUILD RUN ./build.sh --target=Clean
 
 
