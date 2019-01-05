@@ -24,7 +24,6 @@ ONBUILD COPY ./build.sh ./build.cake ./nuget.config ./
 ONBUILD COPY ./build/constants.cake ./build/constants.cake
 ONBUILD COPY ./build/common.cake ./build/common.cake
 ONBUILD COPY ./build/version.cake ./build/version.cake
-ONBUILD RUN mkdir src
 ONBUILD RUN ./build.sh --target=Clean
 
 
